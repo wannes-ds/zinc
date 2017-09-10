@@ -165,6 +165,69 @@ impl Gpio for Pin {
   }
 }
 
+/// Alternate Function Pin
+pub struct AlternateFunctionPin {
+  /// Pin
+  pub pin: Pin,
+  /// Alternate function number
+  pub alternate_function: u16,
+}
+
+impl AlternateFunctionPin {
+  /// Create new alterate function pin
+  pub fn new(pin: u8, port: Port, alt_func: u16) -> AlternateFunctionPin {
+    AlternateFunctionPin {
+      pin: Pin {
+        pin: pin,
+        port: port,
+        function: Function::AltFunction,
+      },
+      alternate_function: alt_func,
+    }
+  }
+
+  /// Setup the pin
+  #[inline(always)]
+  pub fn setup(&self) {
+    assert!(match self.pin.function {
+      Function::AltFunction => true,
+      _ => false
+    });
+
+    use self::reg::GPIO_moder_mode as RegMode;
+
+    self.pin.port.clock().enable();
+
+    let offset = self.pin.pin as usize;
+    let gpreg = self.pin.get_reg();
+
+    gpreg.moder.set_mode(offset, RegMode::Alternate);
+    if offset > 7 {
+      gpreg.afrh.set_afrh(offset - 8, self.alternate_function as u32);
+    } else {
+      gpreg.afrl.set_afrl(offset, self.alternate_function as u32);
+    }
+  }
+
+  /// Configure pin for 5V operating (I2C)
+  #[inline(always)]
+  pub fn five_volt(&self) {
+    assert!(match self.pin.function {
+      Function::AltFunction => true,
+      _ => false
+    });
+
+    use self::reg::GPIO_otyper_ot as OutputTypeMode;
+    use self::reg::GPIO_pupdr_pupd as PullUpDown;
+
+    let offset = self.pin.pin as usize;
+    let gpreg = self.pin.get_reg();
+
+    gpreg.otyper.set_ot(offset, OutputTypeMode::OpenDrain);
+    gpreg.pupdr.set_pupd(offset, PullUpDown::None);
+  }
+}
+
 #[allow(dead_code)]
 mod reg {
   use core::ops::Drop;
@@ -175,8 +238,8 @@ mod reg {
       0..31 => mode[16] {
         0 => Input,
         1 => Output,
-        3 => Alternate,
-        4 => Analog
+        2 => Alternate,
+        3 => Analog
       }
     }
     0x04 => reg32 otyper {

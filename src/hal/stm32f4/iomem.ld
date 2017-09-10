@@ -14,3 +14,7 @@ stm32f4_iomem_GPIOF = 0x40021400;
 stm32f4_iomem_GPIOG = 0x40021800;
 stm32f4_iomem_GPIOH = 0x40021c00;
 stm32f4_iomem_GPIOI = 0x40022000;
+
+stm32f4_iomem_I2C3 = 0x40005C00;
+stm32f4_iomem_I2C2 = 0x40005800;
+stm32f4_iomem_I2C1 = 0x40005400;
