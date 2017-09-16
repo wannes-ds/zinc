@@ -16,12 +16,13 @@ pub struct GPIOClock {
 
 impl GPIOClock {
     /// Enables GPIO clock
+    #[inline(always)]
     pub fn enable(&self) {
         // GPIO0 is not in CM_PER, we start with 1 which is at idx 0
         // todo BUG crashes in NEON/VFP3 mode, does not work in softfp mode
-        let gpioreg = self.reg.gpio[self.id - 1];
-        gpioreg.set_optional_func_clock(true);
-        gpioreg.set_module_mode(0x2);
+        //let gpioreg = self.reg.gpio[self.id - 1];
+        //gpioreg.set_module_mode(0x2);
+        //gpioreg.set_optional_func_clock(true);
         // because ^ doesn't remotely touch the CM_PER reg, use some good ol' asm instead
         let address = 0x44E000AC + ((self.id - 1) * 4);
         let value = 0x4002;
