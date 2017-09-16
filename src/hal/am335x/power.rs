@@ -1,0 +1,2 @@
+//! Power domain management
+

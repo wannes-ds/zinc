@@ -11,11 +11,13 @@ crate-type = ["lib"]
 [features]
 test = ["volatile_cell/replayer"]
 
+cpu_cortex-a8 = []
 cpu_cortex-m0 = []
 cpu_cortex-m3 = []
 cpu_cortex-m4 = []
 cpu_cortex-m7 = []
 
+mcu_am335x = ["cpu_cortex-a8"]
 mcu_lpc11xx = ["cpu_cortex-m0"]
 mcu_lpc17xx = ["cpu_cortex-m3"]
 mcu_stm32f1 = ["cpu_cortex-m3"]

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! The final object that gets linked into the binary. Provides trampilines
+//! The final object that gets linked into the binary. Provides trampolines
 //! for stack management, scheduler, ISRs and other symbols with global
 //! visibility.
 

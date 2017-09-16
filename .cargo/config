@@ -9,3 +9,7 @@ ar = "arm-none-eabi-ar"
 [target.thumbv7em-none-eabi]
 linker = "arm-none-eabi-gcc"
 ar = "arm-none-eabi-ar"
+
+[target.armv7-none-gnueabihf]
+linker = "arm-none-eabi-gcc"
+ar = "arm-none-eabi-ar"

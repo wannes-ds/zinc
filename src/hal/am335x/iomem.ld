@@ -1,0 +1,4 @@
+am335x_iomem_CM_PER = 0x44E00000;
+
+am335x_iomem_GPIO0 = 0x44E07000;
+am335x_iomem_GPIO1 = 0x4804C000;

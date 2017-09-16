@@ -1,0 +1,11 @@
+[package]
+name = "blink_am335x"
+version = "0.0.1"
+
+[features]
+default = ["mcu_am335x"]
+mcu_am335x = ["zinc/mcu_am335x"]
+
+[dependencies]
+zinc = { path =  "../.." }
+macro_zinc = { path = "../../macro_zinc" }

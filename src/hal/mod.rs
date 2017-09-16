@@ -22,6 +22,7 @@ and each such struct has a `setup()` method that configures the hardware
 */
 
 pub mod lpc11xx;
+#[cfg(feature = "mcu_am335x")] pub mod am335x;
 #[cfg(feature = "mcu_lpc17xx")] pub mod lpc17xx;
 #[cfg(feature = "mcu_stm32f1")] pub mod stm32f1;
 #[cfg(feature = "mcu_stm32f4")] pub mod stm32f4;
@@ -30,11 +31,14 @@ pub mod lpc11xx;
 #[cfg(feature = "mcu_k20")] pub mod k20;
 #[cfg(feature = "mcu_tiva_c")] pub mod tiva_c;
 
-#[cfg(any(feature = "cpu_cortex-m0",
+#[cfg(any(feature = "cpu_cortex-a8",
+          feature = "cpu_cortex-m0",
           feature = "cpu_cortex-m3",
           feature = "cpu_cortex-m4",
           feature = "cpu_cortex-m7"))]
 mod cortex_common;
+#[cfg(feature = "cpu_cortex-a8")]
+pub mod cortex_a8;
 #[cfg(feature = "cpu_cortex-m3")]
 pub mod cortex_m3;
 #[cfg(feature = "cpu_cortex-m4")]

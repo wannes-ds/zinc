@@ -1,0 +1,21 @@
+{
+    "arch": "arm",
+    "cpu": "cortex-a8",
+    "data-layout": "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64",
+    "disable-redzone": true,
+    "executables": true,
+    "llvm-target": "armv7-none-gnueabihf",
+    "morestack": false,
+    "os": "none",
+    "relocation-model": "static",
+    "target-endian": "little",
+    "target-pointer-width": "32",
+    "no-compiler-rt": true,
+    "pre-link-args": [
+        "-mtune=cortex-a8", "-Wl,--defsym,STACKSIZE=0x1C000",  "-Wl,--defsym,HEAPSIZE=0x400", "-mfloat-abi=hard",
+        "-Tlayout.ld", "-gdwarf-3", "-gstrict-dwarf"
+    ],
+    "post-link-args": [
+        "-lm", "-lgcc", "-lnosys"
+    ]
+}
