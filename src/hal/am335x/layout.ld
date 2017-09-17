@@ -177,12 +177,12 @@ SECTIONS
         FILL(0xBAD0BAD0)
         . = ALIGN(4);
         __STACK_LIMIT = . ;
+        _eglobals = .;
         *(.stack*)
         . = . + STACKSIZE;
         __StackTop = . ;
         /* The line below created to be compatible with Linaro's semihosting support */
         __STACK_BASE = . ;
-        _eglobals = .;
     } > DDR0
     PROVIDE(__stack = __StackTop);
 
