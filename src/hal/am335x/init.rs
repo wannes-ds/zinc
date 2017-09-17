@@ -15,6 +15,6 @@ pub fn enable_vfp() {
 		MOV   r3, #0\n\t
       	MOV   r0,#0x40000000\n\t
         FMXR  FPEXC,r0                   @ Set FPEXC bit 30 to enable VFP\n\t
-		ISB   SY    @ flush prefetch buffer because of FMXR above" : : : : "volatile")
+		ISB   SY    @ flush prefetch buffer because of FMXR above" : : : "r3", "r0" : "volatile")
     };
 }
