@@ -349,53 +349,53 @@ pub mod builder;
 
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
-  reg.register_macro("ioregs", macro_ioregs);
-  reg.register_macro("ioregs_debug", macro_ioregs_debug);
+    reg.register_macro("ioregs", macro_ioregs);
+    reg.register_macro("ioregs_debug", macro_ioregs_debug);
 }
 
 pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[tokenstream::TokenTree])
-                    -> Box<MacResult+'static> {
-  match parser::Parser::new(cx, tts).parse_ioregs() {
-    Some(group) => {
-      let mut builder = builder::Builder::new();
-      let items = builder.emit_items(cx, group);
-      MacItems::new(items)
-    },
-    None => {
-      panic!("Parsing failed");
+                    -> Box<MacResult + 'static> {
+    match parser::Parser::new(cx, tts).parse_ioregs() {
+        Some(group) => {
+            let mut builder = builder::Builder::new();
+            let items = builder.emit_items(cx, group);
+            MacItems::new(items)
+        }
+        None => {
+            panic!("Parsing failed");
+        }
     }
-  }
 }
 
 pub fn macro_ioregs_debug(cx: &mut ExtCtxt, _: Span, tts: &[tokenstream::TokenTree])
-                    -> Box<MacResult+'static> {
-  match parser::Parser::new(cx, tts).parse_ioregs() {
-    Some(group) => {
-      let mut builder = builder::Builder::new();
-      let items = builder.emit_items(cx, group);
-      for ref i in &items {
-        println!("{}", item_to_string(i));
-      }
-      MacItems::new(items)
-    },
-    None => {
-      panic!("Parsing failed");
+                          -> Box<MacResult + 'static> {
+    match parser::Parser::new(cx, tts).parse_ioregs() {
+        Some(group) => {
+            let mut builder = builder::Builder::new();
+            let items = builder.emit_items(cx, group);
+            for ref i in &items {
+                println!("{}", item_to_string(i));
+            }
+            MacItems::new(items)
+        }
+        None => {
+            panic!("Parsing failed");
+        }
     }
-  }
 }
 
 pub struct MacItems {
-  items: Vec<P<ast::Item>>
+    items: Vec<P<ast::Item>>
 }
 
 impl MacItems {
-  pub fn new(items: Vec<P<ast::Item>>) -> Box<MacResult+'static> {
-    Box::new(MacItems { items: items })
-  }
+    pub fn new(items: Vec<P<ast::Item>>) -> Box<MacResult + 'static> {
+        Box::new(MacItems { items: items })
+    }
 }
 
 impl MacResult for MacItems {
-  fn make_items(self: Box<MacItems>) -> Option<SmallVector<P<ast::Item>>> {
-    Some(SmallVector::many(self.items.clone()))
-  }
+    fn make_items(self: Box<MacItems>) -> Option<SmallVector<P<ast::Item>>> {
+        Some(SmallVector::many(self.items.clone()))
+    }
 }
