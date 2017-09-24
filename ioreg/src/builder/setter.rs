@@ -27,52 +27,52 @@ use super::utils;
 
 /// A visitor to build the field setters for primitive registers
 pub struct BuildSetters<'a, 'b> where 'b : 'a {
-  builder: &'a mut Builder,
-  cx: &'a ExtCtxt<'b>,
+    builder: &'a mut Builder,
+    cx: &'a ExtCtxt<'b>,
 }
 
 impl<'a, 'b> BuildSetters<'a, 'b> {
-  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
-      -> BuildSetters<'a, 'b> {
-    BuildSetters { builder: builder, cx: cx }
-  }
+    pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
+               -> BuildSetters<'a, 'b> {
+        BuildSetters { builder: builder, cx: cx }
+    }
 }
 
 impl<'a, 'c> node::RegVisitor for BuildSetters<'a, 'c> {
-  fn visit_prim_reg<'b>(&'b mut self, path: &Vec<String>,
-      reg: &'b node::Reg, fields: &Vec<node::Field>)
-  {
-    if fields.iter().any(|f| f.access != node::Access::ReadOnly) {
-      let it = build_type(self.cx, path, reg, fields);
-      self.builder.push_item(it);
+    fn visit_prim_reg<'b>(&'b mut self, path: &Vec<String>,
+                          reg: &'b node::Reg, fields: &Vec<node::Field>)
+    {
+        if fields.iter().any(|f| f.access != node::Access::ReadOnly) {
+            let it = build_type(self.cx, path, reg, fields);
+            self.builder.push_item(it);
 
-      let it = build_drop(self.cx, path, reg, fields);
-      self.builder.push_item(it);
+            let it = build_drop(self.cx, path, reg, fields);
+            self.builder.push_item(it);
 
-      let it = build_impl(self.cx, path, reg, fields);
-      self.builder.push_item(it);
+            let it = build_impl(self.cx, path, reg, fields);
+            self.builder.push_item(it);
+        }
     }
-  }
 }
 
 fn build_type(cx: &ExtCtxt, path: &Vec<String>,
-    reg: &node::Reg, _fields: &Vec<node::Field>) -> P<ast::Item>
+              reg: &node::Reg, _fields: &Vec<node::Field>) -> P<ast::Item>
 {
-  let packed_ty = utils::reg_primitive_type(cx, reg)
-    .expect("Unexpected non-primitive register");
-  let name = utils::setter_name(cx, path);
-  let reg_ty = cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
+    let packed_ty = utils::reg_primitive_type(cx, reg)
+        .expect("Unexpected non-primitive register");
+    let name = utils::setter_name(cx, path);
+    let reg_ty = cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
 
-  let reg_doc = match reg.docstring {
-    Some(d) => d.node.name.to_string(),
-    None => "no documentation".to_string(),
-  };
-  let docstring = format!("Update value of `{}` register: {}",
-                          reg.name.node,
-                          reg_doc);
-  let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
+    let reg_doc = match reg.docstring {
+        Some(d) => d.node.name.to_string(),
+        None => "no documentation".to_string(),
+    };
+    let docstring = format!("Update value of `{}` register: {}",
+                            reg.name.node,
+                            reg_doc);
+    let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
-  let item = quote_item!(cx,
+    let item = quote_item!(cx,
     $doc_attr
     #[allow(non_camel_case_types, dead_code)]
     pub struct $name<'a> {
@@ -82,17 +82,17 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
       reg: &'a $reg_ty,
     }
   );
-  let mut item: ast::Item = item.unwrap().deref().clone();
-  item.span = reg.name.span;
-  P(item)
+    let mut item: ast::Item = item.unwrap().deref().clone();
+    item.span = reg.name.span;
+    P(item)
 }
 
 fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
                  -> P<ast::ImplItem> {
-  let reg_ty: P<ast::Ty> =
-    cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
-  let setter_ident = utils::setter_name(cx, path);
-  utils::unwrap_impl_item(quote_item!(cx,
+    let reg_ty: P<ast::Ty> =
+        cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
+    let setter_ident = utils::setter_name(cx, path);
+    utils::unwrap_impl_item(quote_item!(cx,
     impl<'a> $setter_ident<'a> {
       #[doc="Create a new updater"]
       #[inline(always)]
@@ -109,11 +109,11 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
 }
 
 fn build_new_ignoring_state<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
-    reg: &node::Reg) -> P<ast::ImplItem> {
-  let reg_ty: P<ast::Ty> =
-    cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
-  let setter_ident = utils::setter_name(cx, path);
-  utils::unwrap_impl_item(quote_item!(cx,
+                                reg: &node::Reg) -> P<ast::ImplItem> {
+    let reg_ty: P<ast::Ty> =
+        cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
+    let setter_ident = utils::setter_name(cx, path);
+    utils::unwrap_impl_item(quote_item!(cx,
     impl<'a> $setter_ident<'a> {
       #[doc="Create a new updater that ignores current state"]
       #[inline(always)]
@@ -130,34 +130,34 @@ fn build_new_ignoring_state<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
 }
 
 fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
-    reg: &node::Reg, fields: &Vec<node::Field>) -> P<ast::Item>
+              reg: &node::Reg, fields: &Vec<node::Field>) -> P<ast::Item>
 {
-  let setter_ident = utils::setter_name(cx, path);
-  let unpacked_ty = utils::reg_primitive_type(cx, reg)
-    .expect("Unexpected non-primitive register");
+    let setter_ident = utils::setter_name(cx, path);
+    let unpacked_ty = utils::reg_primitive_type(cx, reg)
+        .expect("Unexpected non-primitive register");
 
-  // ensure we don't unintentionally clear a set-to-clear flag
-  let mut clear: u32 = 0;
-  for f in fields.iter() {
-    match f.access {
-      node::Access::SetToClear => {
-        let mask = 1 << (f.count.node * f.width) - 1;
-        clear |= mask;
-      },
-      _ => {},
+    // ensure we don't unintentionally clear a set-to-clear flag
+    let mut clear: u32 = 0;
+    for f in fields.iter() {
+        match f.access {
+            node::Access::SetToClear => {
+                let mask = 1 << (f.count.node * f.width) - 1;
+                clear |= mask;
+            }
+            _ => {}
+        }
     }
-  }
 
-  // no need to read write-only registers
-  let wo_reg: bool = fields.iter().all(|f| f.access == node::Access::WriteOnly);
-  let initial_value =
-    if wo_reg {
-      quote_expr!(cx, 0)
-    } else {
-      quote_expr!(cx, if self.write_only { 0 } else { self.reg.value.get() })
-    };
+    // no need to read write-only registers
+    let wo_reg: bool = fields.iter().all(|f| f.access == node::Access::WriteOnly);
+    let initial_value =
+        if wo_reg {
+            quote_expr!(cx, 0)
+        } else {
+            quote_expr!(cx, if self.write_only { 0 } else { self.reg.value.get() })
+        };
 
-  let item = quote_item!(cx,
+    let item = quote_item!(cx,
     #[doc = "This performs the register update"]
     impl<'a> Drop for $setter_ident<'a> {
       #[inline(always)]
@@ -170,12 +170,12 @@ fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
       }
     }
   );
-  item.unwrap()
+    item.unwrap()
 }
 
 fn build_done(ctx: &ExtCtxt, path: &Vec<String>) -> P<ast::ImplItem> {
-  let setter_ident = utils::setter_name(ctx, path);
-  utils::unwrap_impl_item(quote_item!(ctx,
+    let setter_ident = utils::setter_name(ctx, path);
+    utils::unwrap_impl_item(quote_item!(ctx,
     impl<'a> $setter_ident<'a> {
       #[doc = "Commit changes to register. Allows for chaining of set"]
       #[inline(always)]
@@ -187,19 +187,21 @@ fn build_done(ctx: &ExtCtxt, path: &Vec<String>) -> P<ast::ImplItem> {
 fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
               fields: &Vec<node::Field>) -> P<ast::Item>
 {
-  let new = build_new(cx, path, reg);
-  let new_is = build_new_ignoring_state(cx, path, reg);
-  let setter_ident = utils::setter_name(cx, path);
-  let methods: Vec<P<ast::ImplItem>> =
-    FromIterator::from_iter(
-      fields.iter()
-        .filter_map(|field| build_field_fn(cx, path, reg, field)));
-  let done = build_done(cx, path);
-  quote_item!(cx,
+    let new = build_new(cx, path, reg);
+    let new_is = build_new_ignoring_state(cx, path, reg);
+    let setter_reg = build_register_set_fn(cx, path, reg);
+    let setter_ident = utils::setter_name(cx, path);
+    let methods: Vec<P<ast::ImplItem>> =
+        FromIterator::from_iter(
+            fields.iter()
+                .filter_map(|field| build_field_fn(cx, path, reg, field)));
+    let done = build_done(cx, path);
+    quote_item!(cx,
     #[allow(dead_code)]
     impl<'a> $setter_ident<'a> {
       $new
       $new_is
+      $setter_reg
       $methods
       $done
     }
@@ -209,38 +211,76 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
 fn build_field_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
                   field: &node::Field) -> Option<P<ast::ImplItem>>
 {
-  match field.access {
-    node::Access::ReadOnly => None,
-    node::Access::SetToClear => Some(build_field_clear_fn(cx, path, reg, field)),
-    _ => Some(build_field_set_fn(cx, path, reg, field)),
-  }
+    match field.access {
+        node::Access::ReadOnly => None,
+        node::Access::SetToClear => Some(build_field_clear_fn(cx, path, reg, field)),
+        _ => Some(build_field_set_fn(cx, path, reg, field)),
+    }
+}
+
+/// Build a setter for a register
+fn build_register_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg) -> P<ast::ImplItem>
+{
+    let setter_name = utils::setter_name(cx, path);
+    let reg_ty = utils::reg_primitive_type(cx, reg)
+        .expect("Unexpected non-primitive register");
+
+    let field_doc = match reg.docstring {
+        Some(d) => d.node.name.to_string(),
+        None => "no documentation".to_string(),
+    };
+    let docstring = format!("Set value of `{}` field: {}",
+                            reg.name.node,
+                            field_doc);
+    let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
+
+    let mut mask_str = 0x0 as u64;
+    for x in 0..reg.ty.size() {
+        mask_str |= 0xFF << (x * 8);
+    }
+
+    utils::unwrap_impl_item(quote_item!(cx,
+    impl<'a> $setter_name<'a> {
+      $doc_attr
+      #[inline(always)]
+      pub fn set<'b>(&'b mut self, new_value: $reg_ty) -> &'b mut $setter_name<'a> {
+        self.value = new_value as $reg_ty;
+        self.mask = $mask_str as $reg_ty;
+        self
+      }
+    }
+  ).unwrap())
 }
 
 /// Build a setter for a field
 fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
                       field: &node::Field) -> P<ast::ImplItem>
 {
-  let setter_ty = utils::setter_name(cx, path);
-  let unpacked_ty = utils::reg_primitive_type(cx, reg)
-    .expect("Unexpected non-primitive register");
-  let fn_name =
-    cx.ident_of((String::from("set_")+field.name.node.as_str()).as_str());
-  let field_ty: P<ast::Ty> =
-    cx.ty_path(utils::field_type_path(cx, path, reg, field));
-  let mask = utils::mask(cx, field);
+    let setter_ty = utils::setter_name(cx, path);
+    let unpacked_ty = utils::reg_primitive_type(cx, reg)
+        .expect("Unexpected non-primitive register");
+    let fn_name =
+        cx.ident_of((String::from("set_") + field.name.node.as_str()).as_str());
+    let field_ty: P<ast::Ty> =
+        cx.ty_path(utils::field_type_path(cx, path, reg, field));
+    let mask = utils::mask(cx, field);
 
-  let field_doc = match field.docstring {
-    Some(d) => d.node.name.to_string(),
-    None => "no documentation".to_string(),
-  };
-  let docstring = format!("Set value of `{}` field: {}",
-                          field.name.node,
-                          field_doc);
-  let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
+    let field_doc = match field.docstring {
+        Some(d) => d.node.name.to_string(),
+        None => "no documentation".to_string(),
+    };
+    let docstring = format!("Set value of `{}` field: {}",
+                            field.name.node,
+                            field_doc);
+    let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
-  if field.count.node == 1 {
-    let shift = utils::shift(cx, None, field);
-    utils::unwrap_impl_item(quote_item!(cx,
+    if field.name.node.as_str() == "clock_lsb" {
+        println!("fn_name {} offset {:X}", fn_name, reg.offset);
+    }
+
+    if field.count.node == 1 {
+        let shift = utils::shift(cx, None, field);
+        utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
         #[inline(always)]
@@ -252,9 +292,9 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
         }
       }
     ).unwrap())
-  } else {
-    let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
-    utils::unwrap_impl_item(quote_item!(cx,
+    } else {
+        let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
+        utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
         #[inline(always)]
@@ -267,29 +307,29 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
         }
       }
     ).unwrap())
-  }
+    }
 }
 
 fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
-    _: &node::Reg, field: &node::Field) -> P<ast::ImplItem>
+                        _: &node::Reg, field: &node::Field) -> P<ast::ImplItem>
 {
-  let setter_ty = utils::setter_name(cx, path);
-  let fn_name =
-    cx.ident_of((String::from("clear_")+field.name.node.as_str()).as_str());
-  let mask = utils::mask(cx, field);
+    let setter_ty = utils::setter_name(cx, path);
+    let fn_name =
+        cx.ident_of((String::from("clear_") + field.name.node.as_str()).as_str());
+    let mask = utils::mask(cx, field);
 
-  let field_doc = match field.docstring {
-    Some(d) => d.node.name.to_string(),
-    None => "no documentation".to_string(),
-  };
-  let docstring = format!("Clear `{}` flag: {}",
-                          field.name.node,
-                          field_doc);
-  let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
+    let field_doc = match field.docstring {
+        Some(d) => d.node.name.to_string(),
+        None => "no documentation".to_string(),
+    };
+    let docstring = format!("Clear `{}` flag: {}",
+                            field.name.node,
+                            field_doc);
+    let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
-  if field.count.node == 1 {
-    let shift = utils::shift(cx, None, field);
-    utils::unwrap_impl_item(quote_item!(cx,
+    if field.count.node == 1 {
+        let shift = utils::shift(cx, None, field);
+        utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
         #[inline(always)]
@@ -300,9 +340,9 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
         }
       }
     ).unwrap())
-  } else {
-    let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
-    utils::unwrap_impl_item(quote_item!(cx,
+    } else {
+        let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
+        utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
         #[inline(always)]
@@ -313,5 +353,5 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
         }
       }
     ).unwrap())
-  }
+    }
 }
