@@ -18,3 +18,11 @@ pub fn enable_vfp() {
 		ISB   SY    @ flush prefetch buffer because of FMXR above" : : : "r3", "r0" : "volatile")
     };
 }
+
+/// Enables VFP using NEON coprocessor
+/// When compiling with ARM hard float, this needs to be called before any VFP instr
+#[cfg(target_arch = "x86_64")]
+#[inline(always)]
+pub fn enable_vfp() {
+   // nop
+}

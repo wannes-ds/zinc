@@ -19,14 +19,18 @@ impl GPIOClock {
     #[inline(always)]
     pub fn enable(&self) {
         // GPIO0 is not in CM_PER, we start with 1 which is at idx 0
-        // todo BUG crashes in NEON/VFP3 mode, does not work in softfp mode
+        // todo BUG crashes
         //let gpioreg = self.reg.gpio[self.id - 1];
         //gpioreg.set_module_mode(0x2);
         //gpioreg.set_optional_func_clock(true);
-        // because ^ doesn't remotely touch the CM_PER reg, use some good ol' asm instead
+        // ^ doesn't remotely touch the CM_PER reg
+        // not a bug with the ioregs, writing to the address in plain rust also
+        // produces very awkward asm (storing random values at sp+offsets addr?)
+
+        // use some good ol' asm instead
         let address = 0x44E000AC + ((self.id - 1) * 4);
-        let value = 0x4002;
-        util::put32(address, value);
+        const GPIO_CLK_ACTIVE: usize = 0x4002;
+        util::put32(address, GPIO_CLK_ACTIVE);
     }
 }
 
@@ -37,6 +41,7 @@ pub struct PeripheralClockDomain {
 
 impl PeripheralClockDomain {
     /// Get the clock for GPIO num
+    #[inline(always)]
     pub fn gpio(id: usize) -> GPIOClock {
         GPIOClock {
             reg: &reg::PERIPHERAL_CLOCK,
@@ -48,6 +53,7 @@ impl PeripheralClockDomain {
 #[allow(dead_code)]
 mod reg {
     use volatile_cell::VolatileCell;
+    use core::ops::Drop;
 
     ioregs!(CM = {
         0x0 => reg32 l4ls_clkstctrl {

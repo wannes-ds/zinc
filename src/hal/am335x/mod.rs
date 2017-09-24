@@ -16,6 +16,9 @@
 //! HAL for AM335X.
 
 pub mod init;
+pub mod gpio;
 pub mod peripheral_clock;
+pub mod wakeup_clock;
 pub mod pin;
+pub mod uart;
 mod util;

@@ -1,4 +1,9 @@
 am335x_iomem_CM_PER = 0x44E00000;
+am335x_iomem_CM_WKUP = 0x44E00400;
+
+am335x_iomem_UART0 = 0x44E09000;
+
+am335x_iomem_CONTROL_MODULE = 0x44E10000;
 
 am335x_iomem_GPIO0 = 0x44E07000;
 am335x_iomem_GPIO1 = 0x4804C000;
