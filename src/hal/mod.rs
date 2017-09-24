@@ -21,7 +21,6 @@ and each such struct has a `setup()` method that configures the hardware
 (returning the object to interact with it where applicable).
 */
 
-pub mod lpc11xx;
 #[cfg(feature = "mcu_am335x")] pub mod am335x;
 #[cfg(feature = "mcu_lpc17xx")] pub mod lpc17xx;
 #[cfg(feature = "mcu_stm32f1")] pub mod stm32f1;
