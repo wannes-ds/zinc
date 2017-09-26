@@ -1,8 +1,9 @@
-//! Peripheral clock
+//! UART module
 //!
 
 use hal::am335x::pin;
 use hal::am335x::util;
+use drivers::chario::CharIO;
 
 #[path = "../../util/ioreg.rs"]
 #[macro_use]
@@ -93,6 +94,12 @@ impl UART {
     pub fn write(&self, byte: u8) {
         wait_for!(self.reg.lsr_uart.tx_fifo_shift_empty());
         self.reg.hr.set(byte as u16);
+    }
+}
+
+impl CharIO for UART {
+    fn putc(&self, value: char) {
+        self.write(value as u8);
     }
 }
 
