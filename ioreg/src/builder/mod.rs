@@ -19,7 +19,7 @@ use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 
 use node;
-mod utils;
+pub mod utils;
 
 mod setter;
 mod getter;

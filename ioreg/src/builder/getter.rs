@@ -134,7 +134,7 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
         let val_ident = cx.ident_of(v.name.node.as_str());
         let body = cx.expr_path(
           cx.path(v.name.span, vec!(enum_ident, val_ident)));
-        let val: u64 = v.value.node;
+        let val: u128 = v.value.node as u128;
         let lit = cx.expr_lit(
           v.value.span,
           ast::LitKind::Int(val, ast::LitIntType::Unsuffixed));
@@ -146,9 +146,10 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
               span: lit.span,
               node: ast::PatKind::Lit(lit),
             })
-            ),
-            guard: None,
-            body: cx.expr_some(body.span, body),
+          ),
+          guard: None,
+          body: cx.expr_some(body.span, body),
+          beginning_vert: None,
         };
         arms.push(arm);
       }
@@ -157,6 +158,7 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
         pats: vec!(cx.pat_wild(field.name.span)),
         guard: None,
         body: cx.expr_none(field.name.span),
+        beginning_vert: None,
       };
       arms.push(wild_arm);
       let opt_expr = cx.expr_match(

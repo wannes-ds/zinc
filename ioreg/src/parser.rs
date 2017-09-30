@@ -16,14 +16,17 @@
 use std::rc::Rc;
 use std::ops::Deref;
 use syntax::ast::Ident;
-use syntax::tokenstream::TokenTree;
+use syntax::tokenstream::{TokenTree};
 use syntax::ast;
-use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
+use syntax::codemap::{Span, Spanned, respan, dummy_spanned};
 use syntax::ext::base::ExtCtxt;
-use syntax::parse::{token, ParseSess, lexer};
+use syntax::ext::tt::transcribe;
+use syntax::parse::{token, ParseSess};
 use syntax::parse;
+use syntax::parse::parser;
 use syntax::print::pprust;
-use syntax::parse::lexer::Reader;
+use builder::utils::{token_tree_grow};
+use syntax::ext::tt::quoted;
 
 use node;
 use node::RegType;
@@ -41,7 +44,7 @@ enum Scope {
 pub struct Parser<'a, 'b> where 'b : 'a {
     cx: &'a ExtCtxt<'b>,
     sess: &'a ParseSess,
-    reader: lexer::TtReader<'a>,
+    parser: parser::Parser<'b>,
     token: token::Token,
     span: Span,
 
@@ -52,19 +55,19 @@ pub struct Parser<'a, 'b> where 'b : 'a {
 impl<'a, 'b> Parser<'a, 'b> {
     pub fn new(cx: &'a ExtCtxt<'b>, tts: &[TokenTree]) -> Parser<'a, 'b> {
         let sess = cx.parse_sess();
-        let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
-        let mut reader = lexer::new_tt_reader(&sess.span_diagnostic, None, None, ttsvec);
+        let ttsvec: Vec<quoted::TokenTree> = tts.iter().map(|x| token_tree_grow((*x).clone())).filter(|e| e.is_some()).map(|e| e.unwrap()).collect();
+        let stream = transcribe::transcribe(cx, None, ttsvec);
+        let parser = parser::Parser::new(sess, stream, None, false, false);
 
-        let tok0 = reader.next_token();
-        let token = tok0.tok;
-        let span = tok0.sp;
+        let tok = parser.token.clone();
+        let span = parser.span.clone();
 
         Parser {
             cx: cx,
             sess: sess,
-            reader: reader,
+            parser: parser,
 
-            token: token,
+            token: tok,
             span: span,
 
             last_token: None,
@@ -94,7 +97,6 @@ impl<'a, 'b> Parser<'a, 'b> {
             return None;
         }
 
-        let sp_lo = self.span.lo;
         if !self.expect(&token::OpenDelim(token::Brace)) {
             return None;
         }
@@ -110,7 +112,7 @@ impl<'a, 'b> Parser<'a, 'b> {
             offset: 0,
             name: name,
             ty: RegType::RegUnion(Rc::new(regs)),
-            count: respan(mk_sp(sp_lo, self.span.hi), 1),
+            count: respan(self.span, 1),
             docstring: docstring,
             address: address,
         };
@@ -375,7 +377,7 @@ impl<'a, 'b> Parser<'a, 'b> {
                         (Spanned { node: count.node as u8, span: count.span }, w as u8 / count.node as u8)
                     } else {
                         self.sess.span_diagnostic.span_err(
-                            mk_sp(bits_span.lo, self.last_span.hi),
+                            bits_span.to(self.last_span),
                             format!("Bit width ({}) not divisible by count ({})",
                                     w, count.node).as_str());
                         return None;
@@ -438,7 +440,6 @@ impl<'a, 'b> Parser<'a, 'b> {
             token::OpenDelim(token::Brace) => {
                 self.bump();
 
-                let sp_lo = self.span.lo;
                 let docstring = docstring.or_else(|| self.parse_docstring(Scope::Inner));
                 match self.parse_enum_variants() {
                     Some(variants) => {
@@ -446,7 +447,7 @@ impl<'a, 'b> Parser<'a, 'b> {
                             self.bump();
                         }
                         let ty = respan(
-                            mk_sp(sp_lo, self.span.hi),
+                            self.span,
                             node::FieldType::EnumField { opt_name: None, variants: variants });
                         (docstring, ty)
                     }
@@ -563,11 +564,11 @@ impl<'a, 'b> Parser<'a, 'b> {
             token::Literal(token::Integer(n), suf) => {
                 self.bump();
                 let lit = parse::integer_lit(n.as_str().deref(),
-                                             suf.as_ref().map(|n| n.as_str()),
-                                             &self.sess.span_diagnostic,
-                                             self.span);
+                                         suf.as_ref().map(|n| *n),
+                                         Some((self.span, &self.sess.span_diagnostic))
+                );
                 match lit {
-                    ast::LitKind::Int(n, _) => Some(n),
+                    Some(ast::LitKind::Int(n, _)) => Some(n as u64),
                     _ => None,
                 }
             }
@@ -625,10 +626,10 @@ impl<'a, 'b> Parser<'a, 'b> {
         self.last_span = self.span;
         self.last_token = Some(Box::new(tok.clone()));
 
-        let next = self.reader.next_token();
-
-        self.span = next.sp;
-        self.token = next.tok;
+        self.parser.bump();
+        self.token = self.parser.token.clone();
+        //println!("tok {:?}", self.token);
+        self.span = self.parser.span.clone();
 
         tok
     }

@@ -39,7 +39,7 @@ mod test {
     }
   }
 
-  ioregs!(BASIC_TEST @ 0 = {
+  ioregs_debug!(BASIC_TEST @ 0 = {
     0x0 => reg32 reg1 {
       0      => field1,
       1..3   => field2,

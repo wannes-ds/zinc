@@ -18,7 +18,7 @@ use std::ops::Deref;
 
 use syntax::ast;
 use syntax::ptr::P;
-use syntax::codemap::{respan, mk_sp};
+use syntax::codemap::{respan};
 use syntax::ext::base::ExtCtxt;
 
 use super::Builder;
@@ -101,6 +101,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
         vis: ast::Visibility::Public,
         attrs: attrs,
         span: field.ty.span,
+        tokens: None,
       });
       vec!(ty_item)
     },
@@ -156,13 +157,13 @@ fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
                           doc);
   let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
   respan(
-    mk_sp(variant.name.span.lo, variant.value.span.hi),
+    variant.name.span,
     ast::Variant_ {
       name: cx.ident_of(variant.name.node.as_str()),
       attrs: vec!(doc_attr),
       data: ast::VariantData::Unit(ast::DUMMY_NODE_ID),
       disr_expr: Some(utils::expr_int(cx, respan(variant.value.span,
-                                                 variant.value.node))),
+                                                 variant.value.node as u128))),
     }
   )
 }

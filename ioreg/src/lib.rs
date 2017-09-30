@@ -326,8 +326,7 @@ N => NAME
 ```
 
 */
-
-#![feature(quote, plugin_registrar, rustc_private)]
+#![feature(quote, plugin_registrar, rustc_private, i128_type)]
 
 extern crate rustc;
 extern crate syntax;

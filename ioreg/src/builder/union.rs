@@ -85,7 +85,7 @@ impl<'a, 'b> BuildUnionTypes<'a, 'b> {
 }
 
 fn expr_usize(cx: &ExtCtxt, n: Spanned<u64>) -> P<ast::Expr> {
-  cx.expr_lit(n.span, ast::LitKind::Int(n.node as u64, ast::LitIntType::Unsigned(ast::UintTy::Us)))
+  cx.expr_lit(n.span, ast::LitKind::Int(n.node as u128, ast::LitIntType::Unsigned(ast::UintTy::Us)))
 }
 
 /// Returns the type of the field representing the given register
@@ -98,7 +98,7 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
     1 => base_ty,
     n =>
       cx.ty(reg.count.span,
-            ast::TyKind::FixedLengthVec(base_ty, expr_usize(cx, respan(reg.count.span, n as u64)))),
+            ast::TyKind::Array(base_ty, expr_usize(cx, respan(reg.count.span, n as u64)))),
   }
 }
 
@@ -118,7 +118,7 @@ impl<'a, 'b> BuildUnionTypes<'a, 'b> {
   fn build_reg_union_field(&self, path: &Vec<String>, reg: &node::Reg)
                            -> ast::StructField {
     let attrs = match reg.docstring {
-      Some(doc) => vec!(utils::doc_attribute(self.cx, doc.node.name.as_str())),
+      Some(doc) => vec!(utils::doc_attribute(self.cx, doc.node.name)),
       None => Vec::new(),
     };
     let mut field_path = path.clone();
@@ -146,7 +146,7 @@ impl<'a, 'b> BuildUnionTypes<'a, 'b> {
         let ty: P<ast::Ty> =
           self.cx.ty(
             DUMMY_SP,
-            ast::TyKind::FixedLengthVec(u8_ty, expr_usize(self.cx, respan(DUMMY_SP, length))));
+            ast::TyKind::Array(u8_ty, expr_usize(self.cx, respan(DUMMY_SP, length))));
         ast::StructField {
           span: DUMMY_SP,
           ident: Some(self.cx.ident_of(format!("_pad{}", index).as_str())),
@@ -186,7 +186,7 @@ impl<'a, 'b> BuildUnionTypes<'a, 'b> {
     match reg.docstring {
       Some(docstring) =>
         attrs.push(
-          utils::doc_attribute(self.cx, docstring.node.name.as_str())),
+          utils::doc_attribute(self.cx, docstring.node.name)),
       None => (),
     }
     let struct_item = P(ast::Item {
@@ -196,6 +196,7 @@ impl<'a, 'b> BuildUnionTypes<'a, 'b> {
       node: ast::ItemKind::Struct(struct_def, ast::Generics::default()),
       vis: ast::Visibility::Public,
       span: reg.name.span,
+      tokens: None,
     });
     let mut full_size: u64 = 0;
     //FIXME(mcoffin) - We're making this iterator twice
