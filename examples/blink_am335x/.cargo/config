@@ -1,0 +1,5 @@
+[build]
+target = "armv7-ugh-gnueabihf"
+
+[target.armv7-ugh-gnueabihf]
+linker = "/home/wannes/Downloads/zinc/examples/blink_am335x/linker.sh"
