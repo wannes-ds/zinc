@@ -274,10 +274,6 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
                             field_doc);
     let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
-    if field.name.node.as_str() == "clock_lsb" {
-        println!("fn_name {} offset {:X}", fn_name, reg.offset);
-    }
-
     if field.count.node == 1 {
         let shift = utils::shift(cx, None, field);
         utils::unwrap_impl_item(quote_item!(cx,
