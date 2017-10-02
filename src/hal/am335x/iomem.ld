@@ -7,3 +7,5 @@ am335x_iomem_CONTROL_MODULE = 0x44E10000;
 
 am335x_iomem_GPIO0 = 0x44E07000;
 am335x_iomem_GPIO1 = 0x4804C000;
+
+am335x_iomem_ADC_TSC = 0x44E0D000;

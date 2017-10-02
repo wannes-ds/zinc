@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(asm, lang_items, plugin)]
+#![feature(asm, lang_items, plugin, const_unsafe_cell_new)]
 #![feature(core_intrinsics, core_slice_ext, core_str_ext)]
 #![allow(improper_ctypes)]
 #![feature(const_fn)]
@@ -51,8 +51,10 @@ STM32F403/407).
 #[cfg(target_os = "none")]
 extern crate rlibc;
 
-#[macro_use] #[no_link] extern crate ioreg;
+//#[macro_use] #[no_link] #[plugin] extern crate ioreg;
 #[macro_use] extern crate volatile_cell;
+#[macro_use]
+extern crate lazy_static;
 
 #[cfg(test)] extern crate std;
 

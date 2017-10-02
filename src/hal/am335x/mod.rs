@@ -21,4 +21,5 @@ pub mod peripheral_clock;
 pub mod wakeup_clock;
 pub mod pin;
 pub mod uart;
+pub mod adc;
 mod util;

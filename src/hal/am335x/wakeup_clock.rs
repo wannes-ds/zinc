@@ -1,37 +1,37 @@
-//! Peripheral clock
+//! Wakeup clock
 //!
 use hal::am335x::util;
 
 #[path="../../util/ioreg.rs"]
 #[macro_use] mod ioreg;
 
-/// Bus configuration
+#[allow(missing_docs, non_camel_case)]
 #[derive(Clone, Copy)]
-pub struct UARTClock {
-    /// registers
-    reg: &'static reg::CM,
+pub enum WakeUpClocks {
+    M3 = 0,
+    UART0 = 1,
+    I2C0 = 2,
+    ADC_TSC = 3,
+    SMARTREFFLEX0 = 4,
+    TIMER1 = 5,
+    SMARTREFLEX1 = 6,
+    WDT1 = 8,
 }
 
-impl UARTClock {
-    /// Enables UART clock
-    #[inline(always)]
-    pub fn enable(&self) {
-        self.reg.uart0.set_module_mode(2);
+/// Wakeupclock config
+#[derive(Clone, Copy)]
+pub struct WakeUpClock {}
+
+impl WakeUpClock {
+    fn reg() -> &'static reg::CM {
+        &self::reg::WAKEUP_CLOCK
     }
-}
 
-/// Utility class to access different clock modules
-#[derive(Clone, Copy)]
-pub struct WakeUpClockDomain {
-}
-
-impl WakeUpClockDomain {
-    /// Get the clock for UART0
+    /// Enables clock
     #[inline(always)]
-    pub fn uart0() -> UARTClock {
-        UARTClock {
-            reg: &reg::WAKEUP_CLOCK,
-        }
+    pub fn enable(clock: WakeUpClocks) {
+        let clkidx = clock as usize;
+        WakeUpClock::reg().clkctrl[clkidx].set_module_mode(2);
     }
 }
 
@@ -41,7 +41,8 @@ mod reg {
     use core::ops::Drop;
 
     ioregs!(CM = {
-        0xB4 => reg32 uart0 {
+        0xB0 => reg32 clkctrl[7] {
+            18 => standby,
             17..16 => idle_state,
             1..0 => module_mode,
         }

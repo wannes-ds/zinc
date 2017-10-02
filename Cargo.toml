@@ -37,6 +37,10 @@ path = "./volatile_cell"
 [dependencies]
 rlibc = "*"
 
+[dependencies.lazy_static]
+version = "0.2"
+features = ["nightly", "spin_no_std"]
+
 [dev-dependencies]
 expectest = "*"
 
